@@ -8,23 +8,33 @@ app.get('/', function(req, res){
 
 io.on('connection', function(socket){
   socket.on('retrieve-file', function () {
-    console.log("HERe");
     retrieveContent(socket);
   });
+
+  socket.on('store-content', function (data) {
+    storeContent(socket, data);
+  })
 });
 
 var retrieveContent = function (socket) {
   var spawn = require('child_process').spawn;
   var process = spawn('cat', [ '.travis.yml' ]);
-  console.log("HERE AS WELL");
+
   process.stdout.setEncoding('utf-8');
   process.stdout.on('data', function (data) {
-    console.log(data);
     socket.emit('file-content', data);
   });
-  process.stderr.setEncoding('utf-8');
-  process.stderr.on('data', function (data) {
-    socket.emit('error', data);
+};
+
+var storeContent = function (socket, data) {
+  var exec = require('child_process').exec;
+  var process = exec('truncate -s 0 .travis.yml && echo ' +
+    '"' + data + '" >> .travis.yml');
+
+  process.on('exit', function (code) {
+    if (code === 0) {
+      socket.emit('save-successful');
+    }
   });
 };
 

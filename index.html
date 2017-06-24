@@ -9,9 +9,6 @@
             margin-top: 40px;
             text-align: center;
         }
-        .btn {
-            margin-bottom: 20px;
-        }
         .modal-body {
             height: 600px;
         }
@@ -50,18 +47,18 @@
         });
         editor.getSession().setMode("ace/mode/yaml");
 
-        $('button').click(function () {
+        $("#editor-button").click(function () {
           socket.emit('retrieve-file');
-          $(this).attr("disabled", "none");
         });
 
         socket.on('file-content', function(data){
-          editor.setValue(data);
+          editor.setValue(data, -1);
           $('#editor-modal').modal('show');
         });
 
-        socket.on('err-logs', function(){
-          alert("There was an error");
+        socket.on('save-successful', function () {
+          $("#editor-modal").modal('hide');
+          alert("Saved successfully!");
         });
 
         $("#preview").click(function () {
@@ -74,6 +71,14 @@
           editor.setReadOnly(false);
           $("#edit_li").addClass("active");
           $("#preview_li").removeClass("active");
+        });
+
+        $("#close-modal").click(function () {
+          $('#editor-modal').modal('hide');
+        });
+
+        $("#save-modal").click(function () {
+          socket.emit('store-content', editor.getValue());
         })
       })
     </script>
@@ -81,7 +86,7 @@
 <body>
 <div class="container">
     <div class="col-md-6 col-md-offset-3">
-        <button type="button" class="btn btn-default">Open Modal</button>
+        <button type="button" class="btn btn-default" id="editor-button">Start Editing</button>
     </div>
 </div>
 <div class="container">
@@ -90,8 +95,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Modal Header</h4>
+                <h4 class="modal-title">Editor</h4>
             </div>
             <div class="modal-body">
                 <ul class="nav nav-pills">
@@ -104,7 +108,8 @@
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-default" id="close-modal">Close</button>
+                <button type="button" class="btn btn-success" id="save-modal">Save</button>
             </div>
         </div>
 
