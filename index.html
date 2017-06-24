@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Source Editor</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <style>
+        .container {
+            margin-top: 40px;
+            text-align: center;
+        }
+        .btn {
+            margin-bottom: 20px;
+        }
+        .modal-body {
+            height: 600px;
+        }
+        #editor {
+            position: absolute;
+            height:500px;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+        .editor-container {
+            position: relative;
+            padding: 0;
+            margin: 20px -15px 0 -15px;
+        }
+        .nav-pills a {
+            cursor: pointer;
+        }
+    </style>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js"></script>
+    <script>
+      $(function () {
+        var socket = io();
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/github");
+        editor.setReadOnly(true);
+        editor.$blockScrolling = Infinity;
+        editor.setOptions({
+          fontSize: '12px',
+          fontFamily:'"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
+        });
+        editor.getSession().setMode("ace/mode/yaml");
+
+        $('button').click(function () {
+          socket.emit('retrieve-file');
+          $(this).attr("disabled", "none");
+        });
+
+        socket.on('file-content', function(data){
+          editor.setValue(data);
+          $('#editor-modal').modal('show');
+        });
+
+        socket.on('err-logs', function(){
+          alert("There was an error");
+        });
+
+        $("#preview").click(function () {
+          editor.setReadOnly(true);
+          $("#preview_li").addClass("active");
+          $("#edit_li").removeClass("active");
+        });
+
+        $("#edit").click(function () {
+          editor.setReadOnly(false);
+          $("#edit_li").addClass("active");
+          $("#preview_li").removeClass("active");
+        })
+      })
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="col-md-6 col-md-offset-3">
+        <button type="button" class="btn btn-default">Open Modal</button>
+    </div>
+</div>
+<div class="container">
+</div>
+<div id="editor-modal" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Modal Header</h4>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-pills">
+                    <li id="edit_li"><a id="edit">Editor</a></li>
+                    <li class="active" id="preview_li"><a id="preview">Preview</a></li>
+                </ul>
+                <div class="editor-container">
+                    <div id="editor"></div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
