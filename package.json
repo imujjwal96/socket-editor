@@ -1,5 +1,5 @@
 {
-  "name": "source-editor",
+  "name": "socket-editor",
   "version": "0.0.1",
   "description": "Editing a source file in the server using Socket.io and Ace Editor",
   "dependencies": {
